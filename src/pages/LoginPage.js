@@ -24,8 +24,6 @@ export const LoginPage = () => {
         rememberme : true,
         email
       }))
-
-      
     }
   }, [ ])
 
@@ -66,6 +64,11 @@ export const LoginPage = () => {
       Swal.fire('Error', 'Verifique el usuario y la contraseña', 'error');
     }
 
+  }
+
+
+  const todoOk = () => {
+    return (form.email.length > 0 && form.password.length > 0) ? true : false;
   }
 
   return (
@@ -124,7 +127,11 @@ export const LoginPage = () => {
       </div>
 
       <div className="container-login100-form-btn m-t-17">
-        <button className="login100-form-btn">Ingresar</button>
+        <button
+          className="login100-form-btn"
+          type="submit"
+          disabled={!todoOk()}
+        >Ingresar</button>
       </div>
     </form>
   );
