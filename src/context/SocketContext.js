@@ -1,7 +1,10 @@
 import React, { useContext, useEffect } from 'react';
 import { createContext } from 'react';
 import { AuthContext } from '../auth/AuthContext';
+import { scrollToBottomAnimated } from '../helpers/scrollToBottom';
 import { useSocket } from '../hooks/useSocket'
+import { types } from '../types/types';
+import { ChatContext } from './chat/ChatContext';
 
 export const SocketContext = createContext();
 
@@ -9,12 +12,12 @@ export const SocketContext = createContext();
 export const SocketProvider = ({ children }) => {
 
     const { socket, online, conectarSocket, desconectarSocket } = useSocket('http://localhost:8080');
-
     const { auth } = useContext(AuthContext);
+    const { dispatch } = useContext(ChatContext);
 
     useEffect(() => {
         if(auth.logged){
-            console.log("---------------------------------")
+
             conectarSocket();
         }
     }, [auth, conectarSocket]);
@@ -23,9 +26,40 @@ export const SocketProvider = ({ children }) => {
         if(!auth.logged){
             desconectarSocket();
             desconectarSocket();
-            console.log("++++++++++++++++++++++++++")
         }
     }, [auth, desconectarSocket]);
+
+    //escuchar cuando se conecta uno o mas usuarios
+    useEffect(() => {
+        socket?.on('lista-usuarios', (usuarios)=>{
+            dispatch({
+                type : types.usuariosCargados,
+                payload : usuarios
+            })
+
+        })
+    }, [socket, dispatch]);
+
+
+    //escuchar los emnsajes personales
+    useEffect(() => {
+        socket?.on('mensaje-personal', (mensaje)=> {
+            console.log(mensaje)
+            //Dispath de una accion
+
+            dispatch({
+                type : types.nuevoMensaje,
+                payload : mensaje
+            })
+
+            scrollToBottomAnimated('mensajes');
+            
+        })
+    }, [socket, dispatch])
+
+    
+
+    
     
     return (
         <SocketContext.Provider value={{ socket, online }}>
